@@ -13,9 +13,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Organization {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  users       User[]    // One-to-many relationship with User
+  projects    Project[] // One-to-many relationship with Project
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id       Int       @id @default(autoincrement())
+  name     String
+  email    String    @unique
+  password String
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  status      String
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  modules     Module[]
+}
+
+model Module {
+  id             Int       @id @default(autoincrement())
+  name           String
+  identifier     String    @unique
+  testEnvStatus  String    @default("Not Deployed")
+  prodEnvStatus  String    @default("Not Deployed")
+  modifiedTime   DateTime  @updatedAt
+  history        Json      @default("[]") // Stores an array of change records
+  moduleType     String
+  projectId      Int
+  project        Project   @relation(fields: [projectId], references: [id])
 }
